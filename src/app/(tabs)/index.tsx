@@ -1,25 +1,19 @@
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 export default function ListsScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-900 ">
-      <Text className="dark:text-white">Shopping Lists</Text>
+    <View className="bg-background flex-1 items-center justify-center gap-4">
+      <Text className="text-foreground text-lg font-semibold">Shopping Lists</Text>
       <Link href="/scanner" asChild>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Scan a barcode"
-          style={styles.button}
+          className="bg-primary min-h-11 justify-center rounded-lg px-5 active:opacity-80"
         >
-          <Text className="dark:text-white">Open Scanner</Text>
+          <Text className="text-primary-foreground font-semibold">Open Scanner</Text>
         </Pressable>
       </Link>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    padding: 20,
-  },
-});

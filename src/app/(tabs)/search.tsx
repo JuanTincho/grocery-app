@@ -1,17 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 export default function SearchScreen() {
   return (
-    <View style={styles.container}>
-      <Text>Search</Text>
+    <View className="bg-background flex-1 items-center justify-center">
+      <Text className="text-foreground text-lg font-semibold">Search</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
