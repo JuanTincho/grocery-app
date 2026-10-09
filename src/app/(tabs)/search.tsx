@@ -2,8 +2,8 @@ import { Text, View } from 'react-native';
 
 export default function SearchScreen() {
   return (
-    <View className="bg-background flex-1 items-center justify-center">
-      <Text className="text-foreground text-lg font-semibold">Search</Text>
+    <View className="flex-1 items-center justify-center bg-background">
+      <Text className="text-lg font-semibold text-foreground">Search</Text>
     </View>
   );
 }
