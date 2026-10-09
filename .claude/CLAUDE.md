@@ -95,9 +95,10 @@ implementation unless I say "write it".
 - The load-at-startup pattern and app lifecycle (`AppState`).
 - Zustand stores and TanStack Query hooks (server state vs client state),
   including wiring TanStack Query to NetInfo and `AppState`.
-- The add-item form: keyboard handling and the date picker.
-- Gestures (swipe to delete, drag to reorder) and Android back / iOS
-  swipe-back handling.
+- Keyboard handling for the quick-add input and the pantry form.
+- The pantry form (Day 5): date picker and Android back / iOS swipe-down
+  handling for unsaved changes.
+- Gestures (swipe to delete, drag to reorder).
 - The `.map()` and FlashList screens and the performance measurements.
 - The push notification code: permission, token, handlers and deep links.
   (Credentials and EAS config can be AI.)
@@ -226,10 +227,10 @@ e2e/                 Maestro flows (optional)
       from the tutorial, so keep it quick), NativeWind, light/dark,
       ESLint + Prettier, the folder layout above.
 - [ ] **Day 2, lists done the mobile way:** types and logic in `src/core`;
-      list CRUD with a Zustand store, grouped by category; an add-item form
-      with keyboard handling and a date picker (iOS vs Android); swipe to
-      delete and drag to reorder (gestures instead of hover); Android back /
-      iOS swipe-back on a form with unsaved changes.
+      list CRUD with a Zustand store, grouped by category; a quick-add input
+      ("2 milk") that stays above the keyboard on iOS and Android; swipe to
+      delete (gestures instead of hover). Drag to reorder waits for FlashList
+      on Day 4.
 - [ ] **Day 3, storage, native modules and CNG:** MMKV (a native module, so
       no Expo Go) behind the storage interface; what prebuild generates and
       what a config plugin does; sync JSI vs async bridge storage; load at
@@ -240,7 +241,10 @@ e2e/                 Maestro flows (optional)
       1,000-image `.map()` vs FlashList comparison, then use FlashList for
       the results.
 - [ ] **Day 5, scanner, pantry and push:** expo-camera barcode scanning with
-      the camera permission flow, pantry with expiry dates. Upskilling task:
+      the camera permission flow, pantry with expiry dates. A pantry item
+      form with keyboard handling, a native date picker (iOS vs Android) and
+      a warning on Android back / iOS swipe-down with unsaved changes; the
+      same form edits list items. Upskilling task:
       push notifications, plus local expiry notifications, with a tap that
       opens the pantry item.
 - [ ] **Day 6, Android device pass and accessibility:** on a real Android
