@@ -10,6 +10,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="scanner" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="add-item" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
   );
