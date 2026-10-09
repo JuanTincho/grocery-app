@@ -12,6 +12,7 @@ export default function ListsScreen() {
   const items = useListsStore((s) => s.list.items); // re-renders only when items changes
   const toggleItem = useListsStore((s) => s.toggle);
   const addItem = useListsStore((s) => s.add);
+  const removeItem = useListsStore((s) => s.remove);
 
   const sections = useMemo(() => groupByCategory(items), [items]);
   const insets = useSafeAreaInsets();
@@ -54,7 +55,9 @@ export default function ListsScreen() {
               {category}
             </Text>
           )}
-          renderItem={({ item }) => <ListItemRow item={item} onToggle={toggleItem} />}
+          renderItem={({ item }) => (
+            <ListItemRow item={item} onToggle={toggleItem} onRemove={removeItem} />
+          )}
           ListEmptyComponent={
             <View className="items-center px-8 py-16">
               <Text className="text-center text-base text-muted">
