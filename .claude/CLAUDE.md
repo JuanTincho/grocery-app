@@ -91,8 +91,8 @@ area.
 Give hints, point me to docs, review and explain, but don't write the
 implementation unless I say "write it".
 
-- The architecture and folder decisions, and the storage interface.
-- The load-at-startup pattern and app lifecycle (`AppState`).
+- The architecture and folder decisions.
+- App lifecycle (`AppState`), on Day 4 with TanStack Query.
 - Zustand stores and TanStack Query hooks (server state vs client state),
   including wiring TanStack Query to NetInfo and `AppState`.
 - Keyboard handling for the quick-add input and the pantry form.
@@ -188,9 +188,10 @@ e2e/                 Maestro flows (optional)
   `src/storage`.
 - Persisted data is plain JSON with a `version` field and ISO dates. Never
   drop data on an unknown version.
-- The app loads stored data once at startup and shows a "not ready" state
-  until then. After that, it keeps the data in memory and writes changes
-  through to storage.
+- The app loads stored data once at startup, before the first render (MMKV
+  reads synchronously, so no "not ready" state is needed; an async source
+  would need one). After that, it keeps the data in memory and writes every
+  change through to storage.
 - Each list item and pantry item has an `updatedAt` so a future sync can
   merge by the later timestamp.
 
@@ -234,10 +235,12 @@ e2e/                 Maestro flows (optional)
 - [ ] **Day 3, storage, native modules and CNG:** MMKV (a native module, so
       no Expo Go) behind the storage interface; what prebuild generates and
       what a config plugin does; sync JSI vs async bridge storage; load at
-      startup behind the splash screen; save on background with `AppState`.
+      startup before the first render and save on every change (the OS can
+      kill a backgrounded app without warning).
 - [ ] **Day 4, network, offline and performance:** Open Food Facts client,
       TanStack Query (debounce, cache, retries) wired to NetInfo and
-      `AppState`, offline states, add to list. Upskilling task: the
+      `AppState` (app lifecycle: active, inactive, background), offline
+      states, add to list. Upskilling task: the
       1,000-image `.map()` vs FlashList comparison, then use FlashList for
       the results.
 - [ ] **Day 5, scanner, pantry and push:** expo-camera barcode scanning with

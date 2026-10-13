@@ -27,6 +27,7 @@ type ListsState = {
 const now = () => new Date().toISOString();
 
 export const useListsStore = create<ListsState>()((set) => ({
+  // Initial value for a first launch; src/storage/persistence.ts replaces it with saved data.
   // Sample data in development only; release builds start empty.
   list: { id: 'default', name: 'Shopping list', items: __DEV__ ? SAMPLE_ITEMS : [] },
   add: (input) => set((s) => ({ list: addItem(s.list, { ...input, id: randomUUID() }, now()) })),
