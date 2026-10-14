@@ -30,3 +30,12 @@ export type ShoppingList = {
   name: string;
   items: ListItem[]; // array order is the display order within each category
 };
+
+// A product from the catalogue (search, barcode lookup, fixtures).
+export type Product = {
+  barcode: string;
+  name: string;
+  brand?: string;
+  quantity?: string; // pack size as printed, e.g. "1 l"
+  imageUrl?: string;
+};

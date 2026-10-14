@@ -159,11 +159,14 @@ Write these freely:
 Open Food Facts (https://world.openfoodfacts.org), free with no API key. The
 data is ODbL.
 
-- Product by barcode: `GET /api/v2/product/{barcode}.json`
-- Search: `GET /cgi/search.pl?search_terms=...&json=1&page_size=20`
+- Product by barcode: `GET https://world.openfoodfacts.org/api/v2/product/{barcode}.json`
+  (15 requests/min; over the limit returns 503).
+- Text search: `GET https://search.openfoodfacts.org/search?q=...&page_size=20`,
+  their search service. The main API's search (`/cgi/search.pl`, `/api/v2/search`)
+  is limited to 10 requests/min and blocks quickly, so it isn't used.
 - Send a custom `User-Agent` (app name + contact), as their API docs ask.
-- Search has a low rate limit. Debounce input and rely on TanStack Query's
-  cache. Check the current limits in their docs.
+- Debounce input and rely on TanStack Query's cache. Check the current limits in
+  their docs.
 
 ---
 

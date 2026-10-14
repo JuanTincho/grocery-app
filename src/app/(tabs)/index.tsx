@@ -5,6 +5,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ListItemRow } from '@/components/list-item-row';
 import { QuickAddInput } from '@/components/quick-add-input';
+import { SHOW_DEV_TOOLS } from '@/config';
 import { groupByCategory } from '@/core/lists';
 import { useListsStore } from '@/stores/lists-store';
 
@@ -36,15 +37,28 @@ export default function ListsScreen() {
               <Text accessibilityRole="header" className="text-3xl font-bold text-foreground">
                 Shopping list
               </Text>
-              <Link href="/scanner" asChild>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Scan a barcode"
-                  className="min-h-11 justify-center rounded-full bg-primary px-4 active:opacity-80"
-                >
-                  <Text className="font-semibold text-primary-foreground">Scan</Text>
-                </Pressable>
-              </Link>
+              <View className="flex-row items-center gap-2">
+                {SHOW_DEV_TOOLS ? (
+                  <Link href="/dev" asChild>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Open dev tools"
+                      className="min-h-11 justify-center rounded-full border border-border px-4 active:opacity-80"
+                    >
+                      <Text className="font-semibold text-foreground">Dev</Text>
+                    </Pressable>
+                  </Link>
+                ) : null}
+                <Link href="/scanner" asChild>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Scan a barcode"
+                    className="min-h-11 justify-center rounded-full bg-primary px-4 active:opacity-80"
+                  >
+                    <Text className="font-semibold text-primary-foreground">Scan</Text>
+                  </Pressable>
+                </Link>
+              </View>
             </View>
           }
           renderSectionHeader={({ section: { category } }) => (
