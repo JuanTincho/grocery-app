@@ -32,8 +32,19 @@ export default function RootLayout() {
         <ThemeProvider>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="scanner" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="pantry-item" options={{ presentation: 'modal' }} />
+            {/* Titles are set here, once. Screens don't call setOptions while open: an
+                options update during a modal's close crashed react-native-screens on Android. */}
+            <Stack.Screen
+              name="scanner"
+              options={{ presentation: 'modal', title: 'Scan a barcode' }}
+            />
+            <Stack.Screen
+              name="pantry-item"
+              options={({ route }) => ({
+                presentation: 'modal',
+                title: (route.params as { id?: string } | undefined)?.id ? 'Edit item' : 'New item',
+              })}
+            />
             <Stack.Screen name="dev" options={{ headerShown: false }} />
           </Stack>
         </ThemeProvider>

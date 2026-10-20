@@ -1,8 +1,8 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
-import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { useColorScheme } from 'nativewind';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -13,6 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenMessage } from '@/components/screen-message';
 import { fromIsoDate, toIsoDate } from '@/core/pantry';
@@ -39,6 +40,7 @@ export default function PantryItemScreen() {
   const navigation = useNavigation();
   const { colorScheme } = useColorScheme();
   const scheme = colorScheme ?? 'light';
+  const insets = useSafeAreaInsets();
 
   // The values the screen opened with, to tell whether anything has changed.
   // Lazy useState: computed on the first render only, not every time the store changes.
@@ -48,7 +50,6 @@ export default function PantryItemScreen() {
     expiresOn: existing?.expiresOn,
   }));
   const [form, setForm] = useState(initial);
-  const [saved, setSaved] = useState(false);
   const [androidPickerOpen, setAndroidPickerOpen] = useState(false);
   const quantityRef = useRef<TextInput>(null);
 
@@ -60,23 +61,26 @@ export default function PantryItemScreen() {
     form.quantity !== initial.quantity ||
     form.expiresOn !== initial.expiresOn;
 
+  // Set by Save just before leaving, so the block below lets that one exit through.
+  const leavingAfterSave = useRef(false);
+
   // Unsaved changes: block leaving the screen and ask first. This covers the Cancel button,
   // Android's back button and back gesture, and the iOS swipe-down on the modal: the native
   // stack tells iOS not to dismiss the sheet while this is true (preventNativeDismiss).
-  usePreventRemove(isDirty && !saved, ({ data }) => {
+  usePreventRemove(isDirty, ({ data }) => {
+    // Replaying data.action leaves without asking again: it carries a mark that this screen
+    // already approved it. Save goes out the same way as Discard, with prevention still on.
+    // Turning prevention off first would change the native header's props in the same frame
+    // the screen is removed, which crashes react-native-screens on Android.
+    if (leavingAfterSave.current) {
+      navigation.dispatch(data.action);
+      return;
+    }
     Alert.alert('Discard changes?', 'Your changes to this item will be lost.', [
       { text: 'Keep editing', style: 'cancel' },
-      // Replays the navigation that was blocked (back, swipe, Cancel).
       { text: 'Discard', style: 'destructive', onPress: () => navigation.dispatch(data.action) },
     ]);
   });
-
-  // Leave only after the render where `saved` is true: by then usePreventRemove has been
-  // told to stop blocking. Calling router.back() straight after setSaved() would still be
-  // blocked, because state updates don't apply until the next render.
-  useEffect(() => {
-    if (saved) router.back();
-  }, [saved]);
 
   const save = () => {
     if (!isValid) return;
@@ -93,7 +97,10 @@ export default function PantryItemScreen() {
         if (granted) void rescheduleAllReminders();
       });
     }
-    setSaved(true);
+    // A ref, not state: it must be true right now, when the block above runs, not after
+    // the next render.
+    leavingAfterSave.current = true;
+    router.back();
   };
 
   const setExpiry = (date: Date) => setForm((f) => ({ ...f, expiresOn: toIsoDate(date) }));
@@ -106,32 +113,18 @@ export default function PantryItemScreen() {
       : today;
 
   // Opened from a link or a notification for an item that has since been deleted.
-  if (isEdit && !existing && !saved) {
+  if (isEdit && !existing) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Item not found' }} />
-        <ScreenMessage
-          title="This item is no longer in your pantry"
-          actionLabel="Close"
-          onAction={() => router.back()}
-        />
-      </>
+      <ScreenMessage
+        title="This item is no longer in your pantry"
+        actionLabel="Close"
+        onAction={() => router.back()}
+      />
     );
   }
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: isEdit ? 'Edit item' : 'New item',
-          headerLeft: () => (
-            <HeaderButton label="Cancel" onPress={() => router.back()} scheme={scheme} />
-          ),
-          headerRight: () => (
-            <HeaderButton label="Save" onPress={save} disabled={!isValid} scheme={scheme} bold />
-          ),
-        }}
-      />
       {/* Same approach as the Lists tab: padding works on both platforms now that
           Android draws edge to edge and no longer resizes the window for the keyboard. */}
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
@@ -165,7 +158,7 @@ export default function PantryItemScreen() {
                 setForm((f) => ({ ...f, quantity: text.replace(/[^0-9]/g, '') }))
               }
               accessibilityLabel="Quantity"
-              keyboardType="number-pad" // no return key on iOS; Save is in the header
+              keyboardType="number-pad" // no return key on iOS; Save is in the bar below
               returnKeyType="done"
               onSubmitEditing={save}
               maxLength={3}
@@ -212,6 +205,29 @@ export default function PantryItemScreen() {
             </View>
           </Field>
         </ScrollView>
+
+        {/* Cancel and Save live in the screen, not the native header: changing header
+            options while the screen closes (as Save does) crashes react-native-screens on
+            Android. Inside the KeyboardAvoidingView, so the bar rises with the keyboard. */}
+        <View
+          style={{ paddingBottom: insets.bottom + 8 }}
+          className="flex-row gap-3 border-t border-border bg-background px-4 pt-3"
+        >
+          <View className="flex-1">
+            <OutlineButton label="Cancel" onPress={() => router.back()} />
+          </View>
+          <Pressable
+            onPress={save}
+            disabled={!isValid}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !isValid }}
+            className={`min-h-11 flex-1 items-center justify-center rounded-full bg-primary active:opacity-80 ${
+              isValid ? '' : 'opacity-40'
+            }`}
+          >
+            <Text className="font-semibold text-primary-foreground">Save</Text>
+          </Pressable>
+        </View>
       </KeyboardAvoidingView>
 
       {/* The Android dialog opens when mounted, and must be unmounted when it closes. */}
@@ -248,37 +264,9 @@ function OutlineButton({ label, accessibilityLabel, onPress }: OutlineButtonProp
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
-      className="min-h-11 justify-center rounded-full border border-border px-4 active:opacity-80"
+      className="min-h-11 items-center justify-center rounded-full border border-border px-4 active:opacity-80"
     >
       <Text className="font-semibold text-foreground">{label}</Text>
-    </Pressable>
-  );
-}
-
-type HeaderButtonProps = {
-  label: string;
-  onPress: () => void;
-  scheme: 'light' | 'dark';
-  disabled?: boolean;
-  bold?: boolean;
-};
-
-function HeaderButton({ label, onPress, scheme, disabled, bold }: HeaderButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      hitSlop={8}
-      className={`min-h-11 justify-center px-2 ${disabled ? 'opacity-40' : ''}`}
-    >
-      <Text
-        style={{ color: color(scheme, 'primary') }}
-        className={`text-base ${bold ? 'font-semibold' : ''}`}
-      >
-        {label}
-      </Text>
     </Pressable>
   );
 }

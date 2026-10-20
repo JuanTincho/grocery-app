@@ -1,5 +1,5 @@
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
-import { router, Stack } from 'expo-router';
+import { router } from 'expo-router';
 import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,7 +20,6 @@ export default function ScannerScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Scan a barcode' }} />
       {permission === null ? (
         // Still reading the permission status: don't flash the "allow" message.
         <View className="flex-1 bg-background" />
