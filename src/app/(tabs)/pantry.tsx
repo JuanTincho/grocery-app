@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,9 @@ import { PantryItemRow } from '@/components/pantry-item-row';
 import { ScreenMessage } from '@/components/screen-message';
 import { sortByExpiry, toIsoDate } from '@/core/pantry';
 import { usePantryStore } from '@/stores/pantry-store';
+
+// Module level, so it's the same function on every render and doesn't make rows re-render.
+const openItem = (id: string) => router.push({ pathname: '/pantry-item', params: { id } });
 
 export default function PantryScreen() {
   const items = usePantryStore((s) => s.items); // same reference until the pantry changes
@@ -31,22 +34,35 @@ export default function PantryScreen() {
             <Text accessibilityRole="header" className="text-3xl font-bold text-foreground">
               Pantry
             </Text>
-            <Link href="/scanner" asChild>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Scan a barcode"
-                className="min-h-11 justify-center rounded-full bg-primary px-4 active:opacity-80"
-              >
-                <Text className="font-semibold text-primary-foreground">Scan</Text>
-              </Pressable>
-            </Link>
+            <View className="flex-row items-center gap-2">
+              <Link href="/pantry-item" asChild>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Add a pantry item"
+                  className="min-h-11 justify-center rounded-full border border-border px-4 active:opacity-80"
+                >
+                  <Text className="font-semibold text-foreground">Add</Text>
+                </Pressable>
+              </Link>
+              <Link href="/scanner" asChild>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Scan a barcode"
+                  className="min-h-11 justify-center rounded-full bg-primary px-4 active:opacity-80"
+                >
+                  <Text className="font-semibold text-primary-foreground">Scan</Text>
+                </Pressable>
+              </Link>
+            </View>
           </View>
         }
-        renderItem={({ item }) => <PantryItemRow item={item} today={today} onRemove={removeItem} />}
+        renderItem={({ item }) => (
+          <PantryItemRow item={item} today={today} onPress={openItem} onRemove={removeItem} />
+        )}
         ListEmptyComponent={
           <ScreenMessage
             title="Your pantry is empty"
-            detail="Scan a product to add it with its expiry date."
+            detail="Scan a product or tap Add to keep track of what you have and when it expires."
           />
         }
       />

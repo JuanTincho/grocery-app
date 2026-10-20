@@ -7,6 +7,7 @@ import type { IsoDate, PantryItem } from '@/core/types';
 type Props = {
   item: PantryItem;
   today: IsoDate;
+  onPress: (id: string) => void;
   onRemove: (id: string) => void;
 };
 
@@ -23,8 +24,9 @@ const STATUS_CLASS: Record<ExpiryStatus, string> = {
 // Swipe left to delete, like the shopping list row. The key on Swipeable matters here:
 // FlashList reuses this row for other items, and without it a row left swiped open
 // would show up open again on whichever item reuses it.
-export function PantryItemRow({ item, today, onRemove }: Props) {
+export function PantryItemRow({ item, today, onPress, onRemove }: Props) {
   const status = expiryStatus(item.expiresOn, today);
+  const label = expiryLabel(item.expiresOn, today);
 
   return (
     <Swipeable
@@ -42,26 +44,25 @@ export function PantryItemRow({ item, today, onRemove }: Props) {
         </Pressable>
       )}
     >
-      <View
-        accessible
+      <Pressable
+        onPress={() => onPress(item.id)}
+        accessibilityRole="button"
+        accessibilityLabel={[item.name, item.quantity > 1 && `quantity ${item.quantity}`, label]
+          .filter(Boolean)
+          .join(', ')}
+        accessibilityHint="Opens the item to edit it"
         accessibilityActions={[{ name: 'delete', label: 'Delete' }]}
         onAccessibilityAction={(event) => {
           if (event.nativeEvent.actionName === 'delete') onRemove(item.id);
         }}
-        className="min-h-14 flex-row items-center gap-3 border-b border-border bg-surface px-4 py-2"
+        className="min-h-14 flex-row items-center gap-3 border-b border-border bg-surface px-4 py-2 active:opacity-70"
       >
         <View className="flex-1 gap-0.5">
           <Text className="text-base text-foreground">{item.name}</Text>
-          <Text className={`text-sm ${STATUS_CLASS[status]}`}>
-            {expiryLabel(item.expiresOn, today)}
-          </Text>
+          <Text className={`text-sm ${STATUS_CLASS[status]}`}>{label}</Text>
         </View>
-        {item.quantity > 1 && (
-          <Text className="text-sm text-muted" accessibilityLabel={`Quantity ${item.quantity}`}>
-            ×{item.quantity}
-          </Text>
-        )}
-      </View>
+        {item.quantity > 1 && <Text className="text-sm text-muted">×{item.quantity}</Text>}
+      </Pressable>
     </Swipeable>
   );
 }

@@ -14,6 +14,10 @@ startPersistence();
 // Tells TanStack Query about connectivity (NetInfo) and foreground/background (AppState).
 startQueryLifecycle();
 
+// The screen under a modal opened straight from a link or a notification tap (cold start):
+// without it, closing the pantry item would leave nothing to go back to.
+export const unstable_settings = { anchor: '(tabs)' };
+
 export default function RootLayout() {
   return (
     // Required once at the root for react-native-gesture-handler (e.g. swipe to delete).
@@ -23,6 +27,7 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="scanner" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="pantry-item" options={{ presentation: 'modal' }} />
             <Stack.Screen name="dev" options={{ headerShown: false }} />
           </Stack>
         </ThemeProvider>
