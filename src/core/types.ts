@@ -31,6 +31,20 @@ export type ShoppingList = {
   items: ListItem[]; // array order is the display order within each category
 };
 
+// A calendar day as "YYYY-MM-DD", with no time or time zone. An expiry date is a day on
+// the label, not an instant: storing midnight as a full ISO timestamp would shift it to
+// the previous day for anyone west of UTC.
+export type IsoDate = string;
+
+export type PantryItem = {
+  id: string;
+  name: string;
+  barcode?: string; // set when the item came from the scanner
+  quantity: number;
+  expiresOn?: IsoDate;
+  updatedAt: string; // last change, so a future sync can merge by the later timestamp
+};
+
 // A product from the catalogue (search, barcode lookup, fixtures).
 export type Product = {
   barcode: string;

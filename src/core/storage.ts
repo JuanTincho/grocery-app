@@ -1,13 +1,14 @@
 // Storage contract and the persisted data format. No storage library is imported here:
 // src/storage provides the implementation (MMKV), and another client could provide its own.
-import type { ShoppingList } from './types';
+import type { PantryItem, ShoppingList } from './types';
 
-export const STORAGE_VERSION = 1;
+export const STORAGE_VERSION = 2;
 
 // What is written to disk: plain JSON with a version, so the format can change later.
 export type PersistedState = {
   version: number;
   list: ShoppingList;
+  pantry: PantryItem[]; // added in version 2
 };
 
 export type LoadResult =
@@ -36,11 +37,19 @@ export function parsePersisted(raw: string | undefined): LoadResult {
   if (!isRecord(data) || typeof data.version !== 'number') {
     return { status: 'unreadable', reason: 'missing version' };
   }
-  if (data.version !== STORAGE_VERSION) {
+  if (data.version > STORAGE_VERSION) {
+    // Written by a newer app version: we can't know what it means, so don't touch it.
     return { status: 'unreadable', reason: `unknown version ${data.version}` };
   }
   if (!isRecord(data.list) || !Array.isArray(data.list.items)) {
     return { status: 'unreadable', reason: 'missing list' };
+  }
+  // Version 1 had no pantry. Upgrade in memory; the next save writes version 2.
+  if (data.version === 1) {
+    return { status: 'ok', state: { ...(data as PersistedState), version: 2, pantry: [] } };
+  }
+  if (data.version !== STORAGE_VERSION || !Array.isArray(data.pantry)) {
+    return { status: 'unreadable', reason: 'missing pantry' };
   }
   return { status: 'ok', state: data as PersistedState };
 }

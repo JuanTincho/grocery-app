@@ -21,10 +21,12 @@ export function startPersistence(storage: AppStorage = mmkvStorage): void {
   if (loaded.status === 'ok') {
     useListsStore.setState({ list: loaded.state.list });
   }
+  // Placeholder until the pantry store exists: keep whatever was loaded, unchanged.
+  const pantry = loaded.status === 'ok' ? loaded.state.pantry : [];
 
   useListsStore.subscribe((state, previous) => {
     if (state.list !== previous.list) {
-      storage.save({ version: STORAGE_VERSION, list: state.list });
+      storage.save({ version: STORAGE_VERSION, list: state.list, pantry });
     }
   });
 }
