@@ -5,6 +5,8 @@ import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { queryClient, startQueryLifecycle } from '@/data/query-client';
+import { startNotifications } from '@/notifications/setup';
+import { useNotificationLinks } from '@/notifications/use-notification-links';
 import { startPersistence } from '@/storage/persistence';
 import { ThemeProvider } from '@/theme/theme-provider';
 
@@ -13,12 +15,16 @@ import { ThemeProvider } from '@/theme/theme-provider';
 startPersistence();
 // Tells TanStack Query about connectivity (NetInfo) and foreground/background (AppState).
 startQueryLifecycle();
+// Foreground handler, Android channel, and expiry reminders that follow the pantry store.
+startNotifications();
 
 // The screen under a modal opened straight from a link or a notification tap (cold start):
 // without it, closing the pantry item would leave nothing to go back to.
 export const unstable_settings = { anchor: '(tabs)' };
 
 export default function RootLayout() {
+  useNotificationLinks(); // a tap on a notification opens the screen in its data.url
+
   return (
     // Required once at the root for react-native-gesture-handler (e.g. swipe to delete).
     <GestureHandlerRootView style={{ flex: 1 }}>

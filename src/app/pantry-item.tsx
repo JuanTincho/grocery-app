@@ -17,6 +17,8 @@ import {
 import { ScreenMessage } from '@/components/screen-message';
 import { fromIsoDate, toIsoDate } from '@/core/pantry';
 import type { IsoDate } from '@/core/types';
+import { rescheduleAllReminders } from '@/notifications/expiry-reminders';
+import { ensureNotificationPermission } from '@/notifications/permissions';
 import { usePantryStore } from '@/stores/pantry-store';
 import { color } from '@/theme/colors';
 
@@ -83,6 +85,13 @@ export default function PantryItemScreen() {
       update(existing.id, values);
     } else {
       add({ ...values, barcode: params.barcode });
+    }
+    // The first item with a date is when a reminder makes sense, so ask then. Reminders
+    // scheduled before the answer are scheduled again once permission is granted.
+    if (values.expiresOn) {
+      void ensureNotificationPermission().then((granted) => {
+        if (granted) void rescheduleAllReminders();
+      });
     }
     setSaved(true);
   };
